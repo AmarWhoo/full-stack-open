@@ -6,22 +6,28 @@ const Button = ({ handleClick, text }) => (
   </button>
 )
 
-const StatisticLine = ({ text, value }) => {
-  return <p>{text}: {value}</p>
-}
+const StatisticLine = ({ text, value, sign }) => (
+    <tr>
+      <td>{text}</td>
+      <td>{value}</td>
+      <td>{sign}</td>
+    </tr>
+)
 
 const Statistics = props => {
   if (props.all === 0) return <p>No feedback given.</p>
 
   return (
-    <div>
-      <StatisticLine text="Good" value={props.good} />
-      <StatisticLine text="Neutral" value={props.neutral} />
-      <StatisticLine text="Bad" value={props.bad} />
-      <StatisticLine text="All" value={props.all} />
-      <StatisticLine text="Average" value={props.average} />
-      <StatisticLine text="Positive" value={props.positive} />
-    </div>
+    <table>
+      <tbody>
+        <StatisticLine text="Good" value={props.good} sign=' ' />
+        <StatisticLine text="Neutral" value={props.neutral} sign=' ' />
+        <StatisticLine text="Bad" value={props.bad} sign=' ' />
+        <StatisticLine text="All" value={props.all} sign=' ' />
+        <StatisticLine text="Average" value={props.average} sign=' ' />
+        <StatisticLine text="Positive" value={props.positive} sign='%' />
+      </tbody>
+    </table>
   )
 }
 
