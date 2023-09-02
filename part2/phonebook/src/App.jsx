@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import NumbersList from './components/NumbersList'
 import Search from './components/Search'
 import AddContact from './components/AddContact'
+import phonebookService from './services/PhonebookService'
 
 const App = () => {
 
@@ -13,10 +13,10 @@ const App = () => {
 
   // Get request for fetching person info from the server
   const hook = () => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    phonebookService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }
 
@@ -27,7 +27,6 @@ const App = () => {
   const handleName = (event) => setNewName(event.target.value)
   const handleNumber = (event) => setNewNumber(event.target.value)
   const handleFilter = (event) => setFilterValue(event.target.value.toLowerCase())
-  
   
   // Submit person to phonebook handler
   const addPerson = (event) => {
@@ -46,16 +45,31 @@ const App = () => {
       setNewNumber('')
       return
     }
-    axios
-      .post('http://localhost:3001/persons', personObject)
-      .then(response => {
-        setPersons(persons.concat(response))
-        setNewName('')
-        setNewNumber('')
-      })
-    
+
+    // Post request to send the newly added person to server
+    phonebookService
+    .add(personObject)
+    .then(returnedPerson => {
+      setPersons(persons.concat(returnedPerson))
+      setNewName('')
+      setNewNumber('')
+    })
   }
 
+  // Remove the chosen person from the phonebook and the server
+  const removeContact = (id) => {
+    const chosenPerson = persons.find(person => person.id === id)
+
+    if (window.confirm(`Delete ${chosenPerson.name}`)) {
+      phonebookService
+        .remove(chosenPerson.id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id != id))
+        })
+    }
+  }
+
+  console.log(persons)
   // Value for the filtered persons
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(filterValue)
@@ -65,7 +79,7 @@ const App = () => {
     <div>
       <Search handleFilter={handleFilter} />
       <AddContact newName={newName} newNumber={newNumber} handleName={handleName} handleNumber={handleNumber} addPerson={addPerson} />
-      <NumbersList persons={filteredPersons}/>
+      <NumbersList persons={filteredPersons} handleRemove={removeContact}/>
     </div>
   )
 }
