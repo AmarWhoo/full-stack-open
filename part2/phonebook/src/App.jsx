@@ -39,8 +39,17 @@ const App = () => {
 
     const hasDuplicate = persons.some( person => person.name === personObject.name )
 
+    // If a duplicate name is entered, ask the user if they wish to replace the existing number and the newly added number.
+    // If yes, update both on the page and server
     if (hasDuplicate) {
-      alert(`${personObject.name} is already added to the phonebook.`)
+      if (window.confirm(`${personObject.name} is already added to the phonebook. Replace the old number with a new one?`)) {
+        const duplicate = persons.find(person => person.name === personObject.name)
+        phonebookService
+          .update(duplicate.id, personObject)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.id !== duplicate.id ? person : returnedPerson ))
+          })
+      }
       setNewName('')
       setNewNumber('')
       return
@@ -69,7 +78,6 @@ const App = () => {
     }
   }
 
-  console.log(persons)
   // Value for the filtered persons
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(filterValue)
