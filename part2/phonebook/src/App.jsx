@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import NumbersList from './components/NumbersList'
 import Search from './components/Search'
 import AddContact from './components/AddContact'
+import Notification from './components/Notification'
 import phonebookService from './services/PhonebookService'
 
 const App = () => {
@@ -10,6 +11,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterValue, setFilterValue] = useState('')
+  const [notifMessage, setNotifMessage] = useState(null)
+  const [notifType, setNotifType] = useState(true)
 
   // Get request for fetching person info from the server
   const hook = () => {
@@ -33,8 +36,7 @@ const App = () => {
     event.preventDefault()
     const personObject = {
       name: newName,
-      number: newNumber,
-      id: persons.length + 1
+      number: newNumber
     }
 
     const hasDuplicate = persons.some( person => person.name === personObject.name )
@@ -49,11 +51,26 @@ const App = () => {
           .then(returnedPerson => {
             setPersons(persons.map(person => person.id !== duplicate.id ? person : returnedPerson ))
           })
+          .catch( error => {
+            setNotifMessage(`Contact ${personObject.name} has already been removed from the server`)
+            setNotifType(false)
+            setTimeout(() => {
+              setNotifMessage(null)
+              setNotifType(true)
+            }, 6000)
+            setPersons(persons.filter(person => person.id !== duplicate.id))
+          })
       }
+      
       setNewName('')
       setNewNumber('')
       return
     }
+
+    setNotifMessage(`Added ${personObject.name} to your phonebook`)
+    setTimeout(() => {
+      setNotifMessage(null)
+    }, 4000)
 
     // Post request to send the newly added person to server
     phonebookService
@@ -75,6 +92,15 @@ const App = () => {
         .then(() => {
           setPersons(persons.filter(person => person.id != id))
         })
+        .catch( error => {
+          setNotifMessage(`Contact ${chosenPerson.name} has already been removed from the server`)
+          setNotifType(false)
+          setTimeout(() => {
+            setNotifMessage(null)
+            setNotifType(true)
+          }, 6000)
+          setPersons(persons.filter(person => person.id !== id))
+        })
     }
   }
 
@@ -85,6 +111,8 @@ const App = () => {
 
   return (
     <div>
+      <h1>Phonebook</h1>
+      <Notification message={notifMessage} notifType={notifType} />
       <Search handleFilter={handleFilter} />
       <AddContact newName={newName} newNumber={newNumber} handleName={handleName} handleNumber={handleNumber} addPerson={addPerson} />
       <NumbersList persons={filteredPersons} handleRemove={removeContact}/>
