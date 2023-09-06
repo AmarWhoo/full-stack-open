@@ -4,14 +4,14 @@ const Notification = ({ message, notifType }) => {
         color: 'red'
     }
 
-    const confrimStyle ={
+    const confirmStyle ={
         color: 'green'
     }
 
     if (message === null) return null;
 
     return (
-    <div className='notif' style={notifType ? confrimStyle : errorStyle}>
+    <div className='notif' style={notifType ? confirmStyle : errorStyle}>
         {message}
     </div>
     )
